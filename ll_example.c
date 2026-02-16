@@ -1,6 +1,6 @@
 #include "ll.h"
 
-// 2) insert: เรียงลำดับตาม ID
+// 2) insert: เรียงลำดับตาม ID (Ascending Order)
 void insert(NodePtr *head, int id, char *name) {
     NodePtr newNode = (NodePtr)malloc(sizeof(node));
     if (newNode) {
@@ -12,16 +12,19 @@ void insert(NodePtr *head, int id, char *name) {
         NodePtr current = *head;
         NodePtr previous = NULL;
 
+        // หาตำแหน่งที่จะแทรก (เรียงจากน้อยไปมาก)
         while (current != NULL && id > current->id) {
             previous = current;
             current = current->next;
         }
 
         if (previous == NULL) { 
+            // กรณีแทรกที่หัวแถว (Head)
             newNode->next = *head;
             if (*head != NULL) (*head)->prev = newNode;
             *head = newNode;
         } else {
+            // กรณีแทรกกลางหรือท้ายแถว
             newNode->next = current;
             newNode->prev = previous;
             previous->next = newNode;
@@ -31,20 +34,34 @@ void insert(NodePtr *head, int id, char *name) {
 }
 
 // 3) delete: ลบตาม ID
+// [Image of doubly linked list deletion logic]
 void deleteNode(NodePtr *head, int id) {
     NodePtr current = *head;
 
+    // วนหา Node ที่ต้องการลบ
     while (current != NULL && current->id != id) {
         current = current->next;
     }
 
     if (current != NULL) {
-        if (current == *head) *head = current->next;
-        if (current->next != NULL) current->next->prev = current->prev;
-        if (current->prev != NULL) current->prev->next = current->next;
+        // ถ้าเป็น Head ให้ขยับ Head ไปตัวถัดไป
+        if (current == *head) {
+            *head = current->next;
+        }
+        
+        // เชื่อม Node ถัดไป กลับมาหา Node ก่อนหน้า
+        if (current->next != NULL) {
+            current->next->prev = current->prev;
+        }
+        
+        // เชื่อม Node ก่อนหน้า ข้ามไปหา Node ถัดไป
+        if (current->prev != NULL) {
+            current->prev->next = current->next;
+        }
 
+        // แก้ไข Output ให้ตรงกับ freeAll (delete %d)
+        printf("delete %d\n", id); 
         free(current);
-        printf("%d deleted.\n", id);
     } else {
         printf("%d not found.\n", id);
     }
@@ -97,7 +114,6 @@ int main() {
     char name[50];
 
     // รับค่า choice ไปเรื่อยๆ จนกว่าจะจบไฟล์ หรือเลือก 3
-    // ตัด printf ประโยคคำถามออกเพื่อให้ Autograder ไม่งง
     while (scanf("%d", &choice) != EOF) {
         if (choice == 1) {
             if (scanf("%d %s", &id, name) == 2) {
