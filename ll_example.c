@@ -1,6 +1,6 @@
 #include "ll.h"
 
-// 2) insert: เรียงลำดับตาม ID (Ascending Order)
+// 2) insert: เรียงลำดับตาม ID จากน้อยไปมาก
 void insert(NodePtr *head, int id, char *name) {
     NodePtr newNode = (NodePtr)malloc(sizeof(node));
     if (newNode) {
@@ -12,29 +12,32 @@ void insert(NodePtr *head, int id, char *name) {
         NodePtr current = *head;
         NodePtr previous = NULL;
 
-        // หาตำแหน่งที่จะแทรก (เรียงจากน้อยไปมาก)
+        // วนหาตำแหน่งที่จะแทรก (id ใหม่ น้อยกว่า id ปัจจุบัน หรือไม่)
         while (current != NULL && id > current->id) {
             previous = current;
             current = current->next;
         }
 
         if (previous == NULL) { 
-            // กรณีแทรกที่หัวแถว (Head)
+            // กรณี 1: แทรกที่หัวแถว (List ว่าง หรือ id น้อยที่สุด)
             newNode->next = *head;
-            if (*head != NULL) (*head)->prev = newNode;
+            if (*head != NULL) {
+                (*head)->prev = newNode;
+            }
             *head = newNode;
         } else {
-            // กรณีแทรกกลางหรือท้ายแถว
+            // กรณี 2: แทรกกลางหรือท้ายแถว
             newNode->next = current;
             newNode->prev = previous;
             previous->next = newNode;
-            if (current != NULL) current->prev = newNode;
+            if (current != NULL) {
+                current->prev = newNode;
+            }
         }
     }
 }
 
 // 3) delete: ลบตาม ID
-// [Image of doubly linked list deletion logic]
 void deleteNode(NodePtr *head, int id) {
     NodePtr current = *head;
 
@@ -44,6 +47,7 @@ void deleteNode(NodePtr *head, int id) {
     }
 
     if (current != NULL) {
+        // 
         // ถ้าเป็น Head ให้ขยับ Head ไปตัวถัดไป
         if (current == *head) {
             *head = current->next;
@@ -59,8 +63,9 @@ void deleteNode(NodePtr *head, int id) {
             current->prev->next = current->next;
         }
 
-        // แก้ไข Output ให้ตรงกับ freeAll (delete %d)
-        printf("delete %d\n", id); 
+        // *** จุดสำคัญ: ใช้ format เดียวกับ freeAll (delete %d) ***
+        printf("delete %d\n", id);
+        
         free(current);
     } else {
         printf("%d not found.\n", id);
@@ -95,13 +100,14 @@ void display(NodePtr head) {
     printf("NULL\n");
 }
 
-// 3) ถ้ากด 3 ให้ล้างลิสต์ที่เหลือทั้งหมด
+// 4) ล้างลิสต์ทั้งหมด
 void freeAll(NodePtr *head) {
     printf("Clear all nodes\n");
     NodePtr current = *head;
     while (current != NULL) {
         NodePtr temp = current;
         current = current->next;
+        // Format ตรงนี้คือ "delete %d" ดังนั้น deleteNode ควรใช้ format นี้ด้วย
         printf("delete %d\n", temp->id);
         free(temp);
     }
@@ -116,16 +122,19 @@ int main() {
     // รับค่า choice ไปเรื่อยๆ จนกว่าจะจบไฟล์ หรือเลือก 3
     while (scanf("%d", &choice) != EOF) {
         if (choice == 1) {
+            // Insert
             if (scanf("%d %s", &id, name) == 2) {
                 insert(&head, id, name);
                 display(head);
             }
         } else if (choice == 2) {
+            // Delete
             if (scanf("%d", &id) == 1) {
                 deleteNode(&head, id);
                 display(head);
             }
         } else if (choice == 3) {
+            // Quit
             freeAll(&head);
             printf("End of run.\n");
             break;
