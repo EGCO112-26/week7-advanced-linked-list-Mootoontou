@@ -1,39 +1,35 @@
 #include "ll.h"
 
-// 2) insert: เรียงลำดับตาม ID จากน้อยไปมาก
+// 2) insert: เรียงลำดับตาม ID (Ascending)
 void insert(NodePtr *head, int id, char *name) {
     NodePtr newNode = (NodePtr)malloc(sizeof(node));
-    if (newNode) {
-        newNode->id = id;
-        strcpy(newNode->name, name);
-        newNode->next = NULL;
-        newNode->prev = NULL;
+    if (!newNode) return;
 
-        NodePtr current = *head;
-        NodePtr previous = NULL;
+    newNode->id = id;
+    strcpy(newNode->name, name);
+    newNode->next = NULL;
+    newNode->prev = NULL;
 
-        // วนหาตำแหน่งที่จะแทรก (id ใหม่ น้อยกว่า id ปัจจุบัน หรือไม่)
-        while (current != NULL && id > current->id) {
-            previous = current;
-            current = current->next;
-        }
+    NodePtr current = *head;
+    NodePtr previous = NULL;
 
-        if (previous == NULL) { 
-            // กรณี 1: แทรกที่หัวแถว (List ว่าง หรือ id น้อยที่สุด)
-            newNode->next = *head;
-            if (*head != NULL) {
-                (*head)->prev = newNode;
-            }
-            *head = newNode;
-        } else {
-            // กรณี 2: แทรกกลางหรือท้ายแถว
-            newNode->next = current;
-            newNode->prev = previous;
-            previous->next = newNode;
-            if (current != NULL) {
-                current->prev = newNode;
-            }
-        }
+    // หาตำแหน่งแทรก
+    while (current != NULL && id > current->id) {
+        previous = current;
+        current = current->next;
+    }
+
+    if (previous == NULL) { 
+        // แทรกหัวแถว
+        newNode->next = *head;
+        if (*head != NULL) (*head)->prev = newNode;
+        *head = newNode;
+    } else {
+        // แทรกกลางหรือท้าย
+        newNode->next = current;
+        newNode->prev = previous;
+        previous->next = newNode;
+        if (current != NULL) current->prev = newNode;
     }
 }
 
@@ -41,38 +37,24 @@ void insert(NodePtr *head, int id, char *name) {
 void deleteNode(NodePtr *head, int id) {
     NodePtr current = *head;
 
-    // วนหา Node ที่ต้องการลบ
     while (current != NULL && current->id != id) {
         current = current->next;
     }
 
     if (current != NULL) {
-        // 
-        // ถ้าเป็น Head ให้ขยับ Head ไปตัวถัดไป
-        if (current == *head) {
-            *head = current->next;
-        }
-        
-        // เชื่อม Node ถัดไป กลับมาหา Node ก่อนหน้า
-        if (current->next != NULL) {
-            current->next->prev = current->prev;
-        }
-        
-        // เชื่อม Node ก่อนหน้า ข้ามไปหา Node ถัดไป
-        if (current->prev != NULL) {
-            current->prev->next = current->next;
-        }
+        if (current == *head) *head = current->next;
+        if (current->next != NULL) current->next->prev = current->prev;
+        if (current->prev != NULL) current->prev->next = current->next;
 
-        // *** จุดสำคัญ: ใช้ format เดียวกับ freeAll (delete %d) ***
-        printf("delete %d\n", id);
-        
+        // แก้ไข 1: Format ต้องเป็น "delete %d" (ไม่มี 'd' ท้าย delete)
+        printf("delete %d\n", id); 
         free(current);
     } else {
         printf("%d not found.\n", id);
     }
 }
 
-// แสดงผล 2 บรรทัด (Forward และ Backward)
+// แสดงผล
 void display(NodePtr head) {
     if (head == NULL) {
         printf("The list is empty.\n");
@@ -85,7 +67,8 @@ void display(NodePtr head) {
 
     // ขาไป (Forward)
     while (current != NULL) {
-        printf("%d %s --> ", current->id, current->name);
+        // แก้ไข 2: ลบเว้นวรรคหลังลูกศรออก เพื่อให้เป็น ...-->NULL
+        printf("%d %s -->", current->id, current->name);
         if (current->next == NULL) last = current;
         current = current->next;
     }
@@ -94,20 +77,21 @@ void display(NodePtr head) {
     // ขากลับ (Backward)
     current = last;
     while (current != NULL) {
-        printf("%d %s --> ", current->id, current->name);
+        // แก้ไข 3: ลบเว้นวรรคหลังลูกศรออกเช่นกัน
+        printf("%d %s -->", current->id, current->name);
         current = current->prev;
     }
     printf("NULL\n");
 }
 
-// 4) ล้างลิสต์ทั้งหมด
+// 4) ล้างทั้งหมด
 void freeAll(NodePtr *head) {
     printf("Clear all nodes\n");
     NodePtr current = *head;
     while (current != NULL) {
         NodePtr temp = current;
         current = current->next;
-        // Format ตรงนี้คือ "delete %d" ดังนั้น deleteNode ควรใช้ format นี้ด้วย
+        // Format ตรงนี้ต้องตรงกับ deleteNode
         printf("delete %d\n", temp->id);
         free(temp);
     }
@@ -119,22 +103,19 @@ int main() {
     int choice, id;
     char name[50];
 
-    // รับค่า choice ไปเรื่อยๆ จนกว่าจะจบไฟล์ หรือเลือก 3
+    // Loop รับค่า
     while (scanf("%d", &choice) != EOF) {
         if (choice == 1) {
-            // Insert
             if (scanf("%d %s", &id, name) == 2) {
                 insert(&head, id, name);
                 display(head);
             }
         } else if (choice == 2) {
-            // Delete
             if (scanf("%d", &id) == 1) {
                 deleteNode(&head, id);
                 display(head);
             }
         } else if (choice == 3) {
-            // Quit
             freeAll(&head);
             printf("End of run.\n");
             break;
